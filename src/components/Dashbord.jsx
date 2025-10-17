@@ -17,6 +17,28 @@ const Dashboard = () => {
 
   const pageSize = 10;
 
+  // Fetch login count from separate API
+  const fetchLoginCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch("http://127.0.0.1:8000/dashbord/login-users/", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLoginCount(data.total_logged_in_users || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch login count:", err);
+    }
+  };
+
   const fetchUsers = async () => {
     setLoading(true);
     setError("");
@@ -66,12 +88,14 @@ const Dashboard = () => {
       const staff = data.results.filter(
         (u) => u.is_staff && !u.is_superuser
       ).length;
-      const active = data.results.filter((u) => u.is_active).length; // 🔹 Login users
+      
       setUsers(fetchedUsers);
       setTotalUsers(total);
       setStaffCount(staff);
-      setLoginCount(active);
       setTotalPages(Math.ceil(total / pageSize));
+      
+      // Fetch login count separately
+      await fetchLoginCount();
     } catch (err) {
       setError("Failed to load users. Please login first!");
     } finally {
@@ -147,7 +171,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen py-10 px-4">
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen py-10 mt-8 px-4">
       <div className="max-w-7xl mx-auto bg-white shadow-2xl rounded-2xl p-8 border border-gray-200">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
@@ -267,7 +291,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Pagination - Fixed: Removed last page button */}
         {totalPages > 1 && (
           <div className="flex justify-center mt-6 gap-2 flex-wrap">
             <button
@@ -290,15 +314,6 @@ const Dashboard = () => {
                 {num}
               </button>
             ))}
-            {page < totalPages - 2 && <span>...</span>}
-            {page !== totalPages && (
-              <button
-                onClick={() => setPage(totalPages)}
-                className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition"
-              >
-                {totalPages}
-              </button>
-            )}
             <button
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}

@@ -30,7 +30,6 @@ const Profile = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            // ✅ DRF Token Authentication ঠিকভাবে পাঠানো হলো
             Authorization: `Token ${token}`,
           },
         });
@@ -81,7 +80,7 @@ const Profile = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // ✅ Token Authentication header ঠিক
+          Authorization: `Token ${token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -106,6 +105,11 @@ const Profile = () => {
         Loading...
       </p>
     );
+
+  // ✅ Determine user role
+  let userRole = "User 👤";
+  if (profile.is_superuser) userRole = "Superuser (Admin) 🛠️";
+  else if (profile.is_staff) userRole = "Staff 👔";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex justify-center items-center px-4 py-10">
@@ -173,13 +177,35 @@ const Profile = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={formData.email}
               disabled
               className="w-full px-4 py-2 border rounded-xl bg-gray-100 cursor-not-allowed"
             />
+          </div>
+
+         
+
+          {/* 🔹 User Role */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Role
+            </label>
+            <span
+              className={`inline-block px-4 py-2 rounded-xl font-semibold text-white ${
+                profile.is_superuser
+                  ? "bg-purple-600"
+                  : profile.is_staff
+                  ? "bg-blue-600"
+                  : "bg-gray-600"
+              }`}
+            >
+              {userRole}
+            </span>
           </div>
         </div>
 
